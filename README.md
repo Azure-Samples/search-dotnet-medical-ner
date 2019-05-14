@@ -50,8 +50,6 @@ You will find a set of medical files from PubMed that we will use for this purpo
 ## Setting up Azure Search
 Next, we need to create an Azure Search service that will make this content searchable to enable the types of applications show at the top.  
 
-### IMPORTANT: Since Azure Cognitive Search is in private preview as of the writing of this content, it is important that the Azure Search Service you create is either in *South Central US* or *West Europe*.
-
 To learn more about how to do this, please visit [Create an Azure Search service in the portal](https://docs.microsoft.com/en-us/azure/search/search-create-service-portal).  For our demo purposes, you can create a [Free Azure Search Service](https://docs.microsoft.com/en-us/azure/search/search-what-is-azure-search#free-trial).
 
 Once you have created the Azure Search service, you will need to get your Azure Search Service name as you specified in [this step](https://docs.microsoft.com/en-us/azure/search/search-create-service-portal#name-the-service-and-url-endpoint) as well as the [Admin API Key](https://docs.microsoft.com/en-us/azure/search/search-create-index-dotnet#identify-your-azure-search-services-admin-api-key).
