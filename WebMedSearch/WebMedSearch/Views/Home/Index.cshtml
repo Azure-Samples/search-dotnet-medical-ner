@@ -1,0 +1,61 @@
+﻿@{
+    ViewBag.Title = "Azure Search - Web Med Search";
+}
+
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="http://ajax.aspnetcdn.com/ajax/jquery.ui/1.11.4/themes/smoothness/jquery-ui.css">
+
+
+<div class="row">
+    <nav class="col-md-3 d-none d-md-block bg-light sidebar">
+        <div class="sidebar-sticky">
+            <div style="margin:5px;">
+                <a href="javascript:void(0)" onclick="LoadGraph();">Explore Graph Relationships >></a>
+            </div>
+
+            <div style="margin:5px;">
+                @Html.Partial("~/Views/Partial/SearchBox.cshtml")
+            </div>
+            <ul class="nav flex-column">
+                @*<li class="nav-item">
+            @Html.Partial("~/Views/Partial/MultiLevelFacet.cshtml",
+                      new ViewDataDictionary { { "facetField", "terms" }, { "facetTitle", "Multi Level Terms" } })
+        </li>*@
+                @Html.Partial("~/Views/Partial/CheckBoxFacet.cshtml", new ViewDataDictionary { { "facetField", "anatomical_site_concepts" }, { "facetTitle", "Anatomical Site" }, { "collectionFlag", true } })
+                @Html.Partial("~/Views/Partial/CheckBoxFacet.cshtml", new ViewDataDictionary { { "facetField", "disease_disorder_concepts" }, { "facetTitle", "Disease & Disorders" }, { "collectionFlag", true } })
+                @Html.Partial("~/Views/Partial/CheckBoxFacet.cshtml", new ViewDataDictionary { { "facetField", "medical_mention_concepts" }, { "facetTitle", "Medical Mentions" }, { "collectionFlag", true } })
+                @Html.Partial("~/Views/Partial/CheckBoxFacet.cshtml", new ViewDataDictionary { { "facetField", "sign_symptom_concepts" }, { "facetTitle", "Signs & Symptoms" }, { "collectionFlag", true } })
+                @Html.Partial("~/Views/Partial/CheckBoxFacet.cshtml", new ViewDataDictionary { { "facetField", "people" }, { "facetTitle", "People" }, { "collectionFlag", true } })
+                @Html.Partial("~/Views/Partial/CheckBoxFacet.cshtml", new ViewDataDictionary { { "facetField", "organizations" }, { "facetTitle", "Organizations" }, { "collectionFlag", true } })
+            </ul>
+        </div>
+    </nav>
+    <main role="main" class="col-md-8 ml-sm-auto col-lg-9 pt-3 px-4">
+        @Html.Partial("~/Views/Partial/SearchResults.cshtml")
+    </main>
+
+</div>
+
+<script>
+    function LoadGraph()
+    {
+        // Redirect to graph with current query
+        location.href = "/home/graph?q=" + searchParameters["search"];
+    }
+
+    $(function () {
+        // Load the q from url if needed
+        q = location.search.split('q=')[1];
+        if (q != undefined) {
+            if (q.length != null) {
+                $("#q").val(decodeURI(q));
+                searchParameters["search"] = $("#q").val();
+                search();
+            }
+        }
+    });
+    
+</script>
+

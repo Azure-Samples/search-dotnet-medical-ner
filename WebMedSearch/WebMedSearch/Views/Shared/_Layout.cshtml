@@ -1,0 +1,42 @@
+﻿@model WebMedSearch.Models.Task
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="~/Content/favicon.ico">
+    <title>Azure Search - Web Med Search Demo</title>
+
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+
+    @*@Scripts.Render("~/bundles/jquery")*@
+    @*@Scripts.Render("~/bundles/bootstrap")*@
+
+    <script src="~/Scripts/search.js"></script>
+
+    <link href="~/Content/Site.css" rel="stylesheet" />
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
+        <a class="navbar-brand col-sm-4 col-md-3 mr-0" href="/">Azure Search - Web Med Search Demo</a>
+        @*<ul class="navbar-nav px-3">
+            <li class="nav-item text-nowrap">
+                <a class="nav-link" href="#"><img style="max-width:40px;" src="~/Content/graph.png" /></a>
+            </li>
+        </ul>*@
+    </nav>
+
+    <div class="container-fluid">
+        @RenderBody()
+    </div>
+
+</body>
+</html>
+

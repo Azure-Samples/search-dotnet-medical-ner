@@ -1,0 +1,70 @@
+﻿<input class="form-control w-100" type="text" id="q" placeholder="Search" aria-label="Search">
+
+<script>
+    //$(function () {
+    //    $("#q").autocomplete({
+    //        source: function (request, response) {
+    //            $.getJSON("/search/autocomplete",
+    //                { term: $('#q').val(), fuzzy: true },
+    //                response);
+    //        },
+    //        minLength: 2,
+    //        select: function (event, ui) {
+    //            currentPage = 1;
+    //            searchParameters["search"] = $("#q").val();
+    //            search();
+    //        }
+    //    });
+    //});
+    
+    $("#q").keypress(function (event) {
+        searchParameters["search"] = $("#q").val();
+        if (event.keyCode == 13) {
+            currentPage = 1;
+            search();
+            //$("#q").autocomplete('close');
+        }
+    });
+
+    function search() {
+        $.ajax({
+            type: "POST", url: "/search/docs",
+            success: function (data) {
+                searchResults = data;
+                for (var i = 0; i < facetTypes.facets.length; i++) {
+                    var currentFacet = Object.keys(facetTypes.facets[i]).toString();
+                    if (facetTypes.facets[i][currentFacet] == "checkboxFacet") {
+                        refreshCheckboxFacet(currentFacet, searchResults.Facets[currentFacet]);
+                    }
+                    // ... add other facet types here...
+                }
+
+
+                //$('[data-toggle="tooltip"]').hover(function () {
+                //    var e = $(this);
+                    
+                //    $.post('/search/popup',
+                //        {
+                //            term: e[0].id
+                //        },
+                //        function (data) {
+                //            e.attr('title', data);
+                //        });
+
+                //});
+
+                displaySearchResults(searchResults.Results);
+            },
+            data: {
+                "search": searchParameters.search,
+                "skip": searchParameters.skip,
+                "take": searchParameters.take,
+                "select": searchParameters.select,
+                "facets": searchParameters.facets,
+                "filters": searchParameters.filters,
+                "highlights": searchParameters.highlights
+            },
+            accept: 'application/json'
+        });
+    }    
+</script>
