@@ -1,7 +1,13 @@
 ---
-services: search
-platforms: dotnet
-author: liamca
+page_type: sample
+languages:
+- javascript
+- csharp
+- html
+products:
+- azure
+description: "The goal of this project is to show how to leverage Apache cTAKES along with Azure Search to build an effective document search application."
+urlFragment: search-dotnet-medical-ner
 ---
 
 # How To Build a Medical Document Search Application
