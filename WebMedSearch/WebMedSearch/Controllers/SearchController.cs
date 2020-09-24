@@ -1,14 +1,15 @@
-﻿using Microsoft.Azure.Search;
-using Microsoft.Azure.Search.Models;
+﻿using Azure;
+using Azure.Search.Documents;
+using Azure.Search.Documents.Indexes;
+using Azure.Search.Documents.Models;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Web.Mvc;
-using System.Web.Http;
-using WebMedSearch.Models;
-using System.Text;
-using Newtonsoft.Json.Linq;
 using System.Net.Http;
+using System.Web.Http;
+using System.Web.Mvc;
+using WebMedSearch.Models;
+
 
 namespace WebMedSearch.Controllers
 {
@@ -18,48 +19,58 @@ namespace WebMedSearch.Controllers
 
     public class SearchController : Controller
     {
-        private static Uri _serviceUri = new Uri("https://" + ConfigurationManager.AppSettings["SearchServiceName"] + ".search.windows.net");
-        private static HttpClient _httpClient;
-
-        private static string searchServiceName = ConfigurationManager.AppSettings["SearchServiceName"];
-        private static string apiKey = ConfigurationManager.AppSettings["SearchServiceApiKey"];
-        private static string indexName = ConfigurationManager.AppSettings["SearchServiceIndexName"];
-        private static SearchServiceClient searchClient =
-            new SearchServiceClient(searchServiceName, new SearchCredentials(apiKey));
-
+        private static readonly HttpClient _httpClient;
+        private static readonly Uri serviceEndpoint = new Uri(Environment.GetEnvironmentVariable("SEARCH_ENDPOINT"));
+        private static readonly AzureKeyCredential credential = new AzureKeyCredential(Environment.GetEnvironmentVariable("SEARCH_API_KEY"));
+        private static readonly SearchIndexClient indexClient = new SearchIndexClient(serviceEndpoint, credential);
+        private static readonly string indexName = "medical-tutorial";
+        private readonly SearchClient IndexCounter = new SearchClient(serviceEndpoint, indexName, credential);
         // POST: Search
         [System.Web.Http.HttpPost]
-        public ActionResult Docs([FromBody]QueryParameters queryParameters)
+        public ActionResult Docs([FromBody] QueryParameters queryParameters)
         {
             // Perform Azure Search search
             try
             {
                 if (queryParameters.search == null)
                     queryParameters.search = "*";
-                SearchParameters sp = new SearchParameters()
+                SearchOptions so = new SearchOptions()
                 {
-                    HighlightFields = queryParameters.highlights,
                     HighlightPreTag = "<b><em>",
                     HighlightPostTag = "</em></b>",
                     SearchMode = SearchMode.All,
-                    Top = queryParameters.take,
+                    Size = queryParameters.take,
                     Skip = queryParameters.skip,
-                    // Limit results
-                    Select = queryParameters.select,
                     // Add count
-                    IncludeTotalResultCount = true,
-                    // Add facets
-                    Facets = queryParameters.facets,
-                    QueryType = QueryType.Full
+                    IncludeTotalCount = true,
+                    QueryType = SearchQueryType.Full
                 };
+                foreach (var item in queryParameters.highlights)
+                {
+                    so.HighlightFields.Add(item);
+
+                }
+                // Limit results
+                foreach (var item in queryParameters.select)
+                {
+                    so.HighlightFields.Add(item);
+
+                }
+                // Add facets
+                foreach (var item in queryParameters.facets)
+                {
+                    so.HighlightFields.Add(item);
+
+                }
 
                 if (queryParameters.filters != null)
                 {
                     string filter = String.Join(" and ", queryParameters.filters);
-                    sp.Filter = filter;
+                    so.Filter = filter;
                 }
 
-                return Json(searchClient.Indexes.GetClient(indexName).Documents.Search(queryParameters.search, sp),
+                return Json(indexClient.GetSearchClient(indexName),
+
                     JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
@@ -68,6 +79,8 @@ namespace WebMedSearch.Controllers
             }
             return null;
         }
+
+
 
         //public ActionResult AutoComplete(string term, string code, bool fuzzy = true)
         //{
@@ -130,22 +143,22 @@ namespace WebMedSearch.Controllers
             var response = GetFacets(q, nodeType, 15);
             if (response != null)
             {
-                var facetVals = ((FacetResults)response.Facets)[nodeType];
+                var facetVals = (response.Facets)[nodeType];
                 foreach (var facet in facetVals)
                 {
                     node = -1;
-                    if (NodeMap.TryGetValue(facet.Value.ToString(), out node) == false)
+                    if (NodeMap.TryGetValue(facet.ToString(), out node) == false)
                     {
                         // This is a new node
                         CurrentNodes++;
                         node = CurrentNodes;
-                        NodeMap[facet.Value.ToString()] = node;
+                        NodeMap[facet.ToString()] = node;
                     }
                     // Add this facet to the fd list
-                    if (NodeMap[q] != NodeMap[facet.Value.ToString()])
+                    if (NodeMap[q] != NodeMap[facet.ToString()])
                     {
-                        FDEdgeList.Add(new FDGraphEdges { source = NodeMap[q], target = NodeMap[facet.Value.ToString()] });
-                        NextLevelTerms.Add(facet.Value.ToString());
+                        FDEdgeList.Add(new FDGraphEdges { source = NodeMap[q], target = NodeMap[facet.ToString()] });
+                        NextLevelTerms.Add(facet.ToString());
                     }
                 }
             }
@@ -156,21 +169,21 @@ namespace WebMedSearch.Controllers
                 response = GetFacets(q + " \"" + term + "\"", nodeType, 3);
                 if (response != null)
                 {
-                    var facetVals = ((FacetResults)response.Facets)[nodeType];
+                    var facetVals = (response.Facets)[nodeType];
                     foreach (var facet in facetVals)
                     {
                         node = -1;
-                        if (NodeMap.TryGetValue(facet.Value.ToString(), out node) == false)
+                        if (NodeMap.TryGetValue(facet.ToString(), out node) == false)
                         {
                             // This is a new node
                             CurrentNodes++;
                             node = CurrentNodes;
-                            NodeMap[facet.Value.ToString()] = node;
+                            NodeMap[facet.ToString()] = node;
                         }
                         // Add this facet to the fd list
-                        if (NodeMap[term] != NodeMap[facet.Value.ToString()])
+                        if (NodeMap[term] != NodeMap[facet.ToString()])
                         {
-                            FDEdgeList.Add(new FDGraphEdges { source = NodeMap[term], target = NodeMap[facet.Value.ToString()] });
+                            FDEdgeList.Add(new FDGraphEdges { source = NodeMap[term], target = NodeMap[facet.ToString()] });
                         }
                     }
                 }
@@ -189,7 +202,6 @@ namespace WebMedSearch.Controllers
                 edges.Add(JObject.Parse("{source: " + entry.source + ", target: " + entry.target + "}"));
             }
 
-
             dataset.Add(new JProperty("edges", edges));
             dataset.Add(new JProperty("nodes", nodes));
 
@@ -198,21 +210,21 @@ namespace WebMedSearch.Controllers
             return dataset;
         }
 
-        public DocumentSearchResult GetFacets(string searchText, string nodeType, int maxCount = 30)
+
+        public SearchResults<SearchDocument> GetFacets(string searchText, string nodeType, int maxCount = 30)
         {
             // Execute search based on query string
             try
             {
-                SearchParameters sp = new SearchParameters()
+                SearchOptions so = new SearchOptions()
                 {
                     SearchMode = SearchMode.All,
-                    Top = 0,
-                    Select = new List<String>() { "metadata_storage_path" },
-                    Facets = new List<String>() { nodeType + ", count:" + maxCount },
-                    QueryType = QueryType.Full
+                    Size = 0,
+                    QueryType = SearchQueryType.Full
                 };
-
-                return searchClient.Indexes.GetClient(indexName).Documents.Search(searchText, sp);
+                so.Select.Add("metadata_storage_path");
+                so.Facets.Add(nodeType + ", count:" + maxCount);
+                return indexClient.GetSearchClient(indexName).Search<SearchDocument>(searchText, so);
             }
             catch (Exception ex)
             {
