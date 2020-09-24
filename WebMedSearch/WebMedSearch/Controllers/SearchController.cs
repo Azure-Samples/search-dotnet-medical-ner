@@ -27,7 +27,7 @@ namespace WebMedSearch.Controllers
         private readonly SearchClient IndexCounter = new SearchClient(serviceEndpoint, indexName, credential);
         // POST: Search
         [System.Web.Http.HttpPost]
-        public ActionResult Docs([FromBody] QueryParameters queryParameters)
+        public ActionResult Docs([FromBody]QueryParameters queryParameters)
         {
             // Perform Azure Search search
             try
