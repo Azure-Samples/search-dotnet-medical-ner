@@ -10,7 +10,6 @@ using System.Web.Http;
 using System.Web.Mvc;
 using WebMedSearch.Models;
 
-
 namespace WebMedSearch.Controllers
 {
     // This controller contains all the calls to Azure Search.  It is important to have calls route through
