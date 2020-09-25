@@ -102,7 +102,7 @@
             .enter()
             .append("circle")
             .attr({ "r": 20 })
-            .style("fill", function (d, i) { return "colors(i)"; })	// change "#9ECAE1" to colors(i) to get different colors
+            .style("fill", function (d, i) { return "#9ECAE1"; })	// change "#9ECAE1" to colors(i) to get different colors
             .call(force.drag)
 
         nodes.on("dblclick.zoom", function (d) {
